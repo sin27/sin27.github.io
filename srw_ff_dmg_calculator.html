@@ -1,0 +1,130 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>機戰F完結篇傷害計算</title>
+    <script src="https://code.jquery.com/jquery-1.12.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.0/knockout-min.js"></script>
+    <style>
+        #calculator {
+            width: 450px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body>
+    <div id="calculator">
+        <h2>機戰F完結篇傷害計算</h2>
+        <fieldset>
+            <legend>攻擊方</legend>
+            <div>
+                <label for="pilot_damage">駕駛能力</label>
+                <input id="pilot_damage" type="number" data-bind="value:pilot_damage">
+            </div>
+            <div>
+                <label for="pilot_will">氣力</label>
+                <input id="pilot_will" type="number" data-bind="value:pilot_will">
+            </div>
+            <div>
+                <label for="terrain">綜合地形適應</label>
+                <select id="terrain" data-bind="value:terrain">
+                    <option value="1.2">A</option>
+                    <option value="1">B</option>
+                    <option value="0.8">C</option>
+                    <option value="0.6">D</option>
+                    <option value="0">E</option>
+                </select>
+            </div>
+            <div>
+                <label for="weapon_damage">武器傷害</label>
+                <input id="weapon_damage" type="number" data-bind="value:weapon_damage">
+            </div>
+            <div>
+                <label for="weapon_terrain">武器地形適應</label>
+                <select id="weapon_terrain" data-bind="value:weapon_terrain">
+                    <option value="1">A</option>
+                    <option value="0.7">B</option>
+                    <option value="0.4">C</option>
+                    <option value="0">E</option>
+                </select>
+            </div>
+            <div>
+                <label for="bonus">信賴補正</label>
+                <input id="bonus" type="number" data-bind="value:bonus">%
+            </div>
+            <div>
+                <label for="sp">使用精神</label>
+                <select id="sp" data-bind="value:sp">
+                    <option value="1">無</option>
+                    <option value="2">熱血</option>
+                    <option value="3">魂</option>
+                </select>
+            </div>
+            <div>
+                <input id="critical" type="checkbox" data-bind="checked:critical">
+                <label for="critical">是否爆擊</label>
+            </div>
+        </fieldset>
+        <br />
+        <fieldset>
+            <legend>防禦方</legend>
+            <div>
+                <label for="armor">裝甲</label>
+                <input id="armor" type="number" data-bind="value:armor">
+            </div>
+            <div>
+                <label for="defender_will">氣力</label>
+                <input id="defender_will" type="number" data-bind="value:defender_will">
+            </div>
+            <div>
+                <label for="defender_terrain">綜合地形適應</label>
+                <select id="defender_terrain" data-bind="value:defender_terrain">
+                    <option value="1.2">A</option>
+                    <option value="1">B</option>
+                    <option value="0.8">C</option>
+                    <option value="0.6">D</option>
+                    <option value="0">E</option>
+                </select>
+            </div>
+            <div>
+                <label for="terrain_bonus">地形加成</label>
+                <input id="terrain_bonus" type="number" data-bind="value:terrain_bonus">%
+            </div>
+        </fieldset>
+        <p>
+            可造成
+            <strong data-bind="text:damage"></strong>點傷害!
+        </p>
+    </div>
+
+    <script>
+        var model = function () {
+            var self = this;
+            self.pilot_damage = ko.observable(200);
+            self.pilot_will = ko.observable(100);
+            self.terrain = ko.observable();
+            self.weapon_damage = ko.observable(2600);
+            self.weapon_terrain = ko.observable();
+            self.bonus = ko.observable(0);
+            self.sp = ko.observable();
+            self.critical = ko.observable();
+            self.armor = ko.observable(2800);
+            self.defender_will = ko.observable(100);
+            self.defender_terrain = ko.observable();
+            self.terrain_bonus = ko.observable(0);
+            self.damage = ko.computed(function () {
+                var atk = self.pilot_damage() / 100 * self.pilot_will() / 100 * self.terrain() * self.weapon_damage() * self.weapon_terrain(),
+                    def = self.armor() * self.defender_will() / 100 * self.defender_terrain(),
+                    bonus = (1 - self.terrain_bonus() / 100) * (1 + self.bonus() / 100) * self.sp() * (self.critical() ? 1.5 : 1),
+                    damage = (atk - def);
+                return Math.round((damage > 10 ? damage : 10) * bonus);
+            });
+        };
+        $(function () {
+            ko.applyBindings(model, document.getElementById('calculator'));
+        });
+    </script>
+</body>
+</html>
